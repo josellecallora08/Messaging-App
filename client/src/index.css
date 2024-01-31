@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: logo-font;
+    src: url(/fonts/AlfaSlabOne.ttf);
+}
+
+.animate-slide{
+    animation: slide 1s forwards;    
+}
+
+@keyframes slide{
+    from { transform: translateX(100%) }
+    to { transform: translateX(0);}
+}
