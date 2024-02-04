@@ -1,5 +1,7 @@
-import React, { Dispatch, SetStateAction, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
+import { is_login, login } from '../features/auth/authSlice'
 
 interface LoginProps {
   setLoginState: Dispatch<SetStateAction<boolean>>
@@ -11,6 +13,8 @@ interface FieldSet {
 }
 
 const Login: React.FC<LoginProps> = ({ setLoginState }) => {
+  const dispatch = useAppDispatch()
+  const auth = useAppSelector((state) => state.auth)
   const navigate = useNavigate()
   const [field, setField] = useState<FieldSet>({
     email: '',
@@ -26,10 +30,34 @@ const Login: React.FC<LoginProps> = ({ setLoginState }) => {
     }))
   }
 
-  const handleLogin = async () => {
-    navigate('/')
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try{
+      const response = await fetch(`http://localhost:5500/api/user/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": 'application/json'
+        },
+        body: JSON.stringify({
+          email: field.email,
+          password: field.password
+        }),
+        credentials: 'include'
+      })
+      if(!response.ok) throw new Error("Invalid credentials")
+      
+      const json = await response.json()
+      console.log(json)
+      dispatch(login(json))
+      navigate('/')
+      console.log(response.headers.get('Set-Cookie'))
+
+    } catch(err){
+      throw new Error("asoidjasoidjaosidj")
+    }
   }
 
+  
   return (
     <>
       <form

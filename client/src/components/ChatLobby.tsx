@@ -11,7 +11,7 @@ const ChatLobby = () => {
   return (
     <button
       onClick={handleOpenChat}
-      className='w-full h-full max-h-20 flex justify-center items-center gap-5 hover:backdrop-blur-xl'
+      className='w-full h-full max-h-20 flex justify-center items-center gap-5 duration-200 hover:backdrop-blur-xl'
     >
       <div className='w-5/6 m-auto h-full max-h-20 flex items-center gap-5'>
         <figure className='w-12 h-12 '>
@@ -31,6 +31,7 @@ const ChatLobby = () => {
         </div>
       </div>
     </button>
+    
   )
 }
 

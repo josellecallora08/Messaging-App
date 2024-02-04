@@ -24,7 +24,7 @@ export default {
         'logo':'logo-font'
       },
       boxShadow:{
-        'md-inner': '2px 2px 5px inset'
+        'md-inner': '2px 2px 4px inset'
       }
     },
   },
