@@ -22,13 +22,14 @@ const authSlice = createSlice({
 export const {login, logout} = authSlice.actions
 
 export const is_login = (navigate: any) => async (dispatch: any) =>  {
-  const token = Cookies.get();
+  const token = Cookies.get('token');
     console.log(token)
     if (token) {
       try {
         const response = await fetch(`http://localhost:5500/api/user/login`, {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${token}`,
             'Content-type': 'application/json'
           }
         });

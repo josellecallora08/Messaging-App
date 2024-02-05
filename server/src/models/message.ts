@@ -7,11 +7,11 @@ interface Message extends Document{
 }
 
 const MessageSchema = new Schema({
-    sender: {
+    senderId: {
        type: mongoose.Schema.Types.ObjectId,
         ref: 'user',
     },
-    receiver: {
+    receiverId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
     },

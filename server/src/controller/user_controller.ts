@@ -2,15 +2,17 @@ import UserModel from "../models/user";
 import { Request, Response, NextFunction } from "express";
 import { httpStatusCodes } from "../utils/statuscodes";
 import bcrypt from 'bcrypt'
-import { SessionData } from 'express-session'; // Import Session and SessionData
+import jwt from 'jsonwebtoken'
 
-interface ExtendedSessionData extends SessionData {
-  user?: {
-    id: string; 
-    email: string;
-  };
+interface PayloadToken {
+    _id:string
+    email:string
 }
-  
+
+export const createToken = ({_id, email}: PayloadToken): string => {
+    return jwt.sign({_id, email}, process.env.SECRET as string, {expiresIn: '3d'})
+}  
+
 class UserController {
 
     static async fetchUser(req: Request, res: Response){
@@ -25,7 +27,7 @@ class UserController {
         }
     } 
 
-    static async createUser(req: Request & {session: ExtendedSessionData}, res: Response){
+    static async createUser(req: Request, res: Response){
         try{
             const {name, email, password} = req.body
             if(!name || !email || !password) return res.status(httpStatusCodes.BAD_REQUEST).json({error: "All fields are required."})
@@ -42,20 +44,22 @@ class UserController {
             if(!newUser) return res.status(httpStatusCodes.BAD_REQUEST).json({error: "Unable to sign up"})
 
             const details = {
-                id: newUser._id.toString(),
+                _id: newUser._id.toString(),
                 email: newUser.email
             }
-            req.session.user = details
+
+            const token = createToken(details)
+            res.cookie('token',token,{maxAge: 900000, httpOnly: true})
 
             await newUser.save()
-            return res.status(httpStatusCodes.OK).json({newUser, msg:"Success!"})
+            return res.status(httpStatusCodes.OK).json({newUser, msg:"Success!", token})
         } catch(err){
             console.error({err})
             return res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({error: "Internal server error"})
         }
     }
 
-    static async loginUser(req: Request & {session: ExtendedSessionData}, res: Response){
+    static async loginUser(req: Request, res: Response){
         try{
             const {email, password} = req.body
             if(!email || !password) return res.status(httpStatusCodes.CONFLICT).json({error: "All fields are required"})
@@ -67,28 +71,18 @@ class UserController {
             if(!isPasswordValid) return res.status(httpStatusCodes.UNAUTHORIZED).json({error: "Invalid credentials"})
        
             const details = {
-                id: user._id.toString(),
+                _id: user._id.toString(),
                 email: user.email
             }
-            req.session.user = details
-            return res.status(httpStatusCodes.OK).json({msg: "Success!", user})
+
+            const token = createToken(details)
+            res.cookie('token',token,{maxAge: 900000, httpOnly: true})
+
+            return res.status(httpStatusCodes.OK).json({msg: "Success!", user, token})
         } catch(err){
             return res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({error: "Internal Server Error"})
         }
     }
-
-    static logoutUser(req: Request, res: Response): void {
-        req.session.destroy((err) => {
-          if (err) {
-            console.error('Error destroying session:', err);
-            res.status(500).json({ error: 'Internal Server Error' });
-          } else {
-            res.clearCookie('token')
-            res.status(200).json({ message: 'Logout successful' });
-          }
-        });
-      }
-      
 }
 
 export default UserController

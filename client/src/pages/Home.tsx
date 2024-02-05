@@ -2,25 +2,33 @@ import ChatLobby from '../components/ChatLobby'
 import Header from '../components/Header'
 import ChatBox from '../components/ChatBox'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-// import io from 'socket.io-client'
+import io from 'socket.io-client'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../features/auth/authSlice'
+import { useEffect, useState } from 'react'
 
 const Home = () => {
+  const [userId, setUserId] = useState('')
   const modal = useAppSelector((state) => state.chatbox_modal_status.status)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
+  useEffect(() => {
+    const socket = io("http://localhost:5500")
+
+    socket.emit('setup', { _id: `${userId}` }); // Replace 'yourUserId' with the actual user ID
+
+    socket.on("connect", () => {
+      console.log(`${socket.connected}, Socket.io connected`); // true
+    });
+    return () => {
+      socket.disconnect();
+      console.log("Disconnected")
+    };
+  }, [])
+
   const handleLogout = async () => {
     try {
-      const response = await fetch(`http://localhost:5500/api/user/logout`, {
-      });
-
-      if (!response.ok) {
-        alert("Something's wrong");
-        return;
-      }
-      alert("Logout successful");
       dispatch(logout())
       navigate('/form');
     } catch (err) {

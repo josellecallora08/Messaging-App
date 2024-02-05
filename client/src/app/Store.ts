@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import modalReducer from '../features/modal/ChatboxModalSlice'
 import authReducer from '../features/auth/authSlice'
+import messageReducer from '../features/message/messageSlice'
 
 export const Store = configureStore({
   reducer: {
     chatbox_modal_status: modalReducer,
-    auth: authReducer
+    auth: authReducer,
+    msg:messageReducer
   },
 })
 

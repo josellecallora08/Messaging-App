@@ -1,12 +1,9 @@
 import express from "express";
 import dotenv from "dotenv"
 import cors from "cors"
-import http from 'http'
-import socketIO from 'socket.io'
 import mongoose from 'mongoose'
 import user_route from './routes/user'
-import session from 'express-session'
-import MongoStore = require("connect-mongo");
+import {Server} from 'socket.io'
 dotenv.config()
 const app = express()
 
@@ -21,26 +18,30 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 app.use(express.json())
-app.use(session({
-  name:"token",
-  secret: process.env.SECRET as string,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: false, 
-    maxAge: 60 * 60 * 1000, 
-  },
-  store: MongoStore.create({ mongoUrl: `${process.env.MONGODB_URI}`, autoRemove: 'native' }),
-}));
 
 app.use('/api/user', user_route)
 
 mongoose.connect(`${process.env.MONGODB_URI}`)
   .then(() => {
-    app.listen(process.env.PORT, () => {
+    const server = app.listen(process.env.PORT, () => {
       console.log(`Server is connected to DB and running on PORT: ${process.env.PORT}`);
-    });
+    })
+    const io = new Server(server,{
+      pingTimeout: 60000,
+      cors: {
+        origin: "http://localhost:5173"
+      }
+    })
+    io.on("connection", (socket) => {
+        console.log("Connected to Socket.io");
+        socket.on("setup", (userData) => {
+          socket.join(userData._id);
+          socket.emit("connected");
+        })
+        socket.on("disconnect", () => {
+          console.log("Disconnected")
+        })
+    })
   })
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error);
