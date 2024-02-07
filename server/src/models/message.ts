@@ -18,9 +18,13 @@ const MessageSchema = new Schema({
     content: {
         type: String,
         required:true
+    },
+    chatId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'chats'
     }
 }, {timestamps: true})
 
-const MessageModel = mongoose.model<Message>('message', MessageSchema)
+const MessageModel = mongoose.model<Message>('messages', MessageSchema)
 
 export default MessageModel

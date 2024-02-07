@@ -13,19 +13,19 @@ const Home = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  useEffect(() => {
-    const socket = io("http://localhost:5500")
+  // useEffect(() => {
+  //   const socket = io("http://localhost:5500")
 
-    socket.emit('setup', { _id: `${userId}` }); // Replace 'yourUserId' with the actual user ID
+  //   socket.emit('setup', { _id: `${userId}` }); // Replace 'yourUserId' with the actual user ID
 
-    socket.on("connect", () => {
-      console.log(`${socket.connected}, Socket.io connected`); // true
-    });
-    return () => {
-      socket.disconnect();
-      console.log("Disconnected")
-    };
-  }, [])
+  //   socket.on("connect", () => {
+  //     console.log(`${socket.connected}, Socket.io connected`); // true
+  //   });
+  //   return () => {
+  //     socket.disconnect();
+  //     console.log("Disconnected")
+  //   };
+  // }, [])
 
   const handleLogout = async () => {
     try {

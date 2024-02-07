@@ -5,9 +5,10 @@ import ChatBody from './ChatBody'
 
 const ChatBox: React.FC = () => {
   const [inputStatus, setInputStatus] = useState<boolean>(true)
-
+  const [update, setUpdate] = useState<boolean>(false)
+  
   return (
-    <div className='w-screen h-screen animate-slide '>
+    <div className='w-screen h-screen animate-slide flex flex-col '>
       <ChatBoxHeader />
       <ChatBody setInputStatus={setInputStatus} />
       <ChatBoxFooter
