@@ -2,21 +2,25 @@ import { Request, Response } from "express";
 import MessageModel from "../models/message";
 import UserModel from "../models/user";
 import ChatModel from "../models/chat";
+import { ExtendedRequest } from "../middleware/authMiddleware";
 import { httpStatusCodes } from "../utils/statuscodes";
 
+
+
 class MessageController {
-    static async createChat(req: Request, res: Response){
+    static async createChat(req: ExtendedRequest, res: Response){
         try{
-            const {senderId, receiverId} = req.params
+            const userId = req.user._id
+            const {receiverId} = req.params
             if(await ChatModel.findOne({
-                'users.sender': senderId || receiverId ,
-                'users.receiver': receiverId || senderId
+                'users.sender': userId || receiverId ,
+                'users.receiver': receiverId || userId
             })){
                 return res
                 .status(httpStatusCodes.OK)
                 .json({msg: "Chat box exists."})
             } else {
-                const chat = await ChatModel.create({'users.sender':senderId, 'users.receiver':receiverId})
+                const chat = await ChatModel.create({'users.sender':userId, 'users.receiver':receiverId})
                 if(!chat)
                 return res
                     .status(httpStatusCodes.BAD_REQUEST)
@@ -34,9 +38,10 @@ class MessageController {
         }
     }
 
-    static async sendMessage(req:Request, res:Response){
+    static async sendMessage(req:ExtendedRequest, res:Response){
         try{    
-            const {senderId, receiverId, chatId} = req.params
+            const senderId = req.user._id
+            const {receiverId, chatId} = req.params
             const {content} = req.body
           
             const chat = await ChatModel.findById({_id:chatId})
@@ -55,6 +60,7 @@ class MessageController {
             chat.messages.push(message._id)
             await chat.save()
             await message.save()
+
             return res
                 .status(httpStatusCodes.OK)
                 .json({msg: "Sent a message", message})
@@ -66,23 +72,28 @@ class MessageController {
         }
     }
 
-    static async fetchMessages(req:Request, res:Response){
+    static async fetchMessages(req:ExtendedRequest, res:Response){
         try{
-            const {chatId} = req.params
-            const message = await ChatModel.findById(chatId).populate({
+            const userId = req.user._id
+            const message = await ChatModel.find({
+                $or:[{
+                    'users.sender': userId
+                },{
+                    'users.receiver': userId
+                }]
+            }).sort({updatedAt: -1}).populate({
                 path: 'users.sender users.receiver messages', // Specify multiple paths separated by a space
                 model: UserModel,
-                select: 'name email -_id', // Add additional fields and exclude _id field
+                select: 'name -_id', // Add additional fields and exclude _id field
             }).populate({
                 path: 'messages',
-                select: 'content createdAt -_id', // Include content and createdAt fields, exclude _id
-            });
+                select: 'content updatedAt -_id', // Include content and createdAt fields, exclude _id
+            }).sort({updatedAt: -1})
             if(!message)
             return res
                 .status(httpStatusCodes.BAD_REQUEST)
                 .json({error: "Unable to fetch message."})
-
-
+            
             return res
                 .status(httpStatusCodes.OK)
                 .json({msg: "Fetched messages.", message})

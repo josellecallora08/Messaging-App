@@ -1,15 +1,30 @@
 import image from '/icon.svg'
-import { useAppDispatch } from '../app/hooks'
-import { open_modal } from '../features/modal/ChatboxModalSlice'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
+import { create_chatbox, open_modal } from '../features/modal/ChatboxModalSlice'
+import Cookies from 'js-cookie'
+import { useEffect, useState } from 'react'
+import { fetch_messages } from '../features/message/messageSlice'
 
 const ChatLobby = () => {
+  const data = useAppSelector((state) => state.msg)
   const dispatch = useAppDispatch()
-  const handleOpenChat = () => {
-    dispatch(open_modal())
+  const token = Cookies.get('token')
+  const [update, setUpdate] = useState<boolean>(false)
+
+  const handleOpenChat = async() => {
+    dispatch(create_chatbox(token))
   }
+  useEffect(() => {
+    const fetchData = async() => {
+      dispatch(fetch_messages(token))
+    }
+    fetchData()
+  }, [])
 
   return (
-    <button
+   <>
+    { data ? 
+      <button
       onClick={handleOpenChat}
       className='w-full h-full max-h-20 flex justify-center items-center gap-5 duration-200 hover:backdrop-blur-xl'
     >
@@ -31,6 +46,8 @@ const ChatLobby = () => {
         </div>
       </div>
     </button>
+    : '' }
+   </>
     
   )
 }

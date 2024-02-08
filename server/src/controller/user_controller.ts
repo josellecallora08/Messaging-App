@@ -1,5 +1,6 @@
 import UserModel from "../models/user";
 import { Request, Response, NextFunction } from "express";
+import {ExtendedRequest} from '../middleware/authMiddleware'
 import { httpStatusCodes } from "../utils/statuscodes";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
@@ -15,12 +16,13 @@ export const createToken = ({_id, email}: PayloadToken): string => {
 
 class UserController {
 
-    static async fetchUser(req: Request, res: Response){
-        try{
-            const users = await UserModel.find({})
-            if(!users || users.length === 0) return res.status(httpStatusCodes.NOT_FOUND).json({error:"User not found"})
+    static async fetchUser(req: ExtendedRequest, res: Response){
+        try{    
+            const userId = req.user._id
+            const users = await UserModel.findById({_id:userId})
+            if(!users) return res.status(httpStatusCodes.NOT_FOUND).json({error:"User not found"})
 
-            return res.status(httpStatusCodes.FOUND).json({users})
+            return res.status(httpStatusCodes.OK).json({users})
         } catch(err){
             console.error("Error fetching user")
             return res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({error: "Internal Server Error"})
@@ -43,13 +45,8 @@ class UserController {
             const newUser = new UserModel({name,email,password:hashed})
             if(!newUser) return res.status(httpStatusCodes.BAD_REQUEST).json({error: "Unable to sign up"})
 
-            const details = {
-                _id: newUser._id.toString(),
-                email: newUser.email
-            }
-
-            const token = createToken(details)
-            res.cookie('token',token,{maxAge: 900000, httpOnly: true})
+            const token = createToken({ _id: newUser._id.toString(), email: newUser.email });
+            res.cookie('token', token, { maxAge: 900000});
 
             await newUser.save()
             return res.status(httpStatusCodes.OK).json({newUser, msg:"Success!", token})
@@ -59,7 +56,7 @@ class UserController {
         }
     }
 
-    static async loginUser(req: Request, res: Response){
+    static async loginUser(req: Request, res: Response, next: NextFunction){
         try{
             const {email, password} = req.body
             if(!email || !password) return res.status(httpStatusCodes.CONFLICT).json({error: "All fields are required"})
@@ -70,16 +67,19 @@ class UserController {
             const isPasswordValid = await bcrypt.compare(password, user.password)
             if(!isPasswordValid) return res.status(httpStatusCodes.UNAUTHORIZED).json({error: "Invalid credentials"})
        
-            const details = {
-                _id: user._id.toString(),
-                email: user.email
-            }
-
-            const token = createToken(details)
-            res.cookie('token',token,{maxAge: 900000, httpOnly: true})
-
+            const token = createToken({ _id: user._id.toString(), email: user.email });
+            res.cookie('token', token, { maxAge: 900000 });
             return res.status(httpStatusCodes.OK).json({msg: "Success!", user, token})
         } catch(err){
+            return res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({error: "Internal Server Error"})
+        }
+    }
+
+    static async logoutUser(req:Request, res:Response){
+        try{
+           res.clearCookie('token')
+           return res.status(httpStatusCodes.OK).json({ msg: "Logout successful" });
+        }catch(err){
             return res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({error: "Internal Server Error"})
         }
     }

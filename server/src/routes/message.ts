@@ -1,11 +1,12 @@
 import {Router} from 'express'
 import MessageController from '../controller/message_controller'
+import { authMiddleware } from '../middleware/authMiddleware'
 
 const router = Router()
 
-router.post('/:senderId/chat/:receiverId', MessageController.createChat)
-router.post('/:senderId/send/:receiverId/:chatId',MessageController.sendMessage)
-router.get('/:chatId', MessageController.fetchMessages)
+router.post('/chat/:receiverId',authMiddleware, MessageController.createChat)
+router.post('/send/:receiverId/:chatId', authMiddleware, MessageController.sendMessage)
+router.get('/', authMiddleware, MessageController.fetchMessages)
 
 export default router
 

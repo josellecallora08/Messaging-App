@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv"
 import cors from "cors"
 import mongoose from 'mongoose'
-
+import cookieParser from "cookie-parser";
 import user_route from './routes/user'
 import message_route from './routes/message'
 
@@ -21,7 +21,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 app.use(express.json())
-
+app.use(cookieParser())
 app.use('/api/user', user_route)
 app.use('/api/message', message_route)
 mongoose.connect(`${process.env.MONGODB_URI}`)
@@ -43,6 +43,10 @@ mongoose.connect(`${process.env.MONGODB_URI}`)
         })
         socket.on("disconnect", () => {
           console.log("Disconnected")
+        })
+
+        socket.on("send-message", (message) => {
+          socket.emit(`${message}`)
         })
     })
   })

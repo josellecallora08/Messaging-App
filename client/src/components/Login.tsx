@@ -1,8 +1,8 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { is_login, login } from '../features/auth/authSlice'
-
+import { fetchUser, loginUser } from '../features/auth/authSlice'
+import Cookies from 'js-cookie'
 interface LoginProps {
   setLoginState: Dispatch<SetStateAction<boolean>>
 }
@@ -16,6 +16,7 @@ const Login: React.FC<LoginProps> = ({ setLoginState }) => {
   const dispatch = useAppDispatch()
   const auth = useAppSelector((state) => state.auth)
   const navigate = useNavigate()
+  const token = Cookies.get('token')
   const [field, setField] = useState<FieldSet>({
     email: '',
     password: '',
@@ -33,31 +34,14 @@ const Login: React.FC<LoginProps> = ({ setLoginState }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try{
-      const response = await fetch(`http://localhost:5500/api/user/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": 'application/json'
-        },
-        body: JSON.stringify({
-          email: field.email,
-          password: field.password
-        }),
-        credentials: 'include'
-      })
-      if(!response.ok) throw new Error("Invalid credentials")
-      
-      const json = await response.json()
-      console.log(json)
-      dispatch(login(json))
-      navigate('/')
-      console.log(response.headers.get('Set-Cookie'))
-
+    
+      dispatch(loginUser(navigate, field.email, field.password))
     } catch(err){
       throw new Error("asoidjasoidjaosidj")
     }
   }
 
-  
+
   return (
     <>
       <form
@@ -98,7 +82,7 @@ const Login: React.FC<LoginProps> = ({ setLoginState }) => {
           />
         </div>
         <p className='m-auto md:m-0'>
-          Don't have account?{' '}
+          Don't have account?
           <button
             onClick={() => setLoginState((prevState) => !prevState)}
             className='text-center md:text-left text-logo hover:underline'

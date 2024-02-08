@@ -1,4 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from 'react'
+import { useAppDispatch } from '../app/hooks'
+import { useNavigate } from 'react-router-dom'
+import { registerUser } from '../features/auth/authSlice'
 
 interface SignupProp {
   setLoginState: Dispatch<SetStateAction<boolean>>
@@ -11,6 +14,9 @@ interface FieldSet {
   confirm_password: string
 }
 const Signup: React.FC<SignupProp> = ({ setLoginState }) => {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+
   const [field, setField] = useState<FieldSet>({
     name: '',
     email: '',
@@ -27,9 +33,25 @@ const Signup: React.FC<SignupProp> = ({ setLoginState }) => {
     }))
   }
 
+  const handleRegister = async () => {
+    try{
+      if(field.name === '' || field.email === '' || field.password === '' || field.confirm_password === ''){
+        alert('All fields are required')
+        return
+      }
+      
+      if(field.password !== field.confirm_password){
+        alert("Password does not match")
+        return
+      }
+      dispatch(registerUser(navigate, field.name, field.email, field.password))
+    }catch(err){
+    }
+  }
+
   return (
     <>
-      <form className='h-4/5 w-full flex flex-wrap gap-5 md:w-3/5 md:h-3/5 md:max-h-60'>
+      <form onSubmit={handleRegister} className='h-4/5 w-full flex flex-wrap gap-5 md:w-3/5 md:h-3/5 md:max-h-60'>
         <div className='w-full max-h-14 h-full '>
           <input
             type='text'

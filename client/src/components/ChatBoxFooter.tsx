@@ -2,6 +2,8 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import ok from '/ok.svg'
 import send from '/send.svg'
 import Cookies from 'js-cookie'
+import { useAppDispatch } from '../app/hooks'
+import { send_message } from '../features/message/messageSlice'
 interface ChatStatus {
   inputStatus: boolean
   setInputStatus: Dispatch<SetStateAction<boolean>>
@@ -11,29 +13,20 @@ const ChatBoxFooter: React.FC<ChatStatus> = ({
   inputStatus,
   setInputStatus,
 }) => {
+  const dispatch = useAppDispatch()
   const token = Cookies.get('token')
   const [messages, setMessages]=useState<String>('')
+  const [receiver, setReceiver] = useState<String>('')
 
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try{
-      const sendMessage = await fetch(``,{
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          messages
-        })
-      })
-      if(!sendMessage.ok){
-        throw new Error("Unable to send message. Please try again later...")
-      }
-      // update handler
+      dispatch(send_message(messages, receiver, token))
     } catch(err) {
-      throw new Error("Unable to send message. Please try again later...")
+      alert("Cannot send empty message")
+      return
     }
   }
   return (

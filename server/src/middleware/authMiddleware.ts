@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from 'jsonwebtoken'
 import { httpStatusCodes } from "../utils/statuscodes";
 
-interface ExtendedRequest extends Request {
+export interface ExtendedRequest extends Request {
     user?: any;
   }
   

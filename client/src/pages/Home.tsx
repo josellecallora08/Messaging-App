@@ -4,7 +4,7 @@ import ChatBox from '../components/ChatBox'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import io from 'socket.io-client'
 import { useNavigate } from 'react-router-dom'
-import { logout } from '../features/auth/authSlice'
+import { logout, logoutUser} from '../features/auth/authSlice'
 import { useEffect, useState } from 'react'
 
 const Home = () => {
@@ -29,8 +29,7 @@ const Home = () => {
 
   const handleLogout = async () => {
     try {
-      dispatch(logout())
-      navigate('/form');
+      dispatch(logoutUser(navigate))
     } catch (err) {
       console.error(err);
       throw new Error("An error occurred during logout");
