@@ -81,7 +81,6 @@ export const loginUser = (navigate:any, email:any, password:any) => async (dispa
 export const fetchUser = (navigate:any) => async (dispatch:any) => {
         try {
           const token = Cookies.get('token')
-          console.log(token) 
             const response = await fetch(`${authUrl}/`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -91,8 +90,9 @@ export const fetchUser = (navigate:any) => async (dispatch:any) => {
               alert("Failed to fetch information.")
               return
             } 
-            const data = await response.json()
-            dispatch(login(data));
+            // const data = await response.json()
+            const decodedToken = jwtDecode<JwtPayload>(token as string)
+            dispatch(login(decodedToken._id));
             navigate('/');
         } catch (error) {
             console.error("Something went wrong:", error);

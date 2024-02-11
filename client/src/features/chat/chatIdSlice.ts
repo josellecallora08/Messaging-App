@@ -2,14 +2,21 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const chatIdSlice = createSlice({
     name:"ChatId",
-    initialState: null,
+    initialState: {
+        chatId: null,
+        receiver: null
+
+    },
     reducers: {
         fetch_chatId:(state,action) => {
-            return state = action.payload
+            state.chatId = action.payload
+        },
+        fetch_receiverId:(state, action) => {
+            state.receiver = action.payload
         }
     }
 })
 
-export const {fetch_chatId} = chatIdSlice.actions
+export const {fetch_chatId, fetch_receiverId} = chatIdSlice.actions
 
 export default chatIdSlice.reducer

@@ -4,6 +4,8 @@ import authReducer from '../features/auth/authSlice'
 import messageReducer from '../features/message/messageSlice'
 import specificMessageReducer from '../features/message/specificMessageSlice'
 import chatIdReducer from '../features/chat/chatIdSlice'
+import userReducer from '../features/user/userSlice'
+import socketReducer from '../features/socket/socketSlice'
 
 export const Store = configureStore({
   reducer: {
@@ -11,7 +13,9 @@ export const Store = configureStore({
     auth: authReducer,
     msg:messageReducer,
     chatUser: specificMessageReducer,
-    chatId: chatIdReducer
+    chatId: chatIdReducer,
+    user: userReducer,
+    socket: socketReducer
   },
 })
 

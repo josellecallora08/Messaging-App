@@ -6,28 +6,17 @@ import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { useNavigate } from 'react-router-dom'
 import {logoutUser} from '../features/auth/authSlice'
 import Cookies from 'js-cookie'
-import { useEffect} from 'react'
-import { fetch_messages } from '../features/message/messageSlice'
+import React, { useEffect} from 'react'
+import { fetch_messages, send_message } from '../features/message/messageSlice'
+import { io } from 'socket.io-client'
 
-const Home = () => {
+
+const Home: React.FC = () => {
   const modal = useAppSelector((state) => state.chatbox_modal_status.status)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const token = Cookies.get('token')
-
-  // useEffect(() => {
-  //   const socket = io("http://localhost:5500")
-
-  //   socket.emit('setup', { _id: `${userId}` }); // Replace 'yourUserId' with the actual user ID
-
-  //   socket.on("connect", () => {
-  //     console.log(`${socket.connected}, Socket.io connected`); // true
-  //   });
-  //   return () => {
-  //     socket.disconnect();
-  //     console.log("Disconnected")
-  //   };
-  // }, [])
+  const userId = useAppSelector((state) => state.auth.user)
 
   const handleLogout = () => {
     try {
@@ -38,6 +27,43 @@ const Home = () => {
     }
   };
   
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try{
+        dispatch(fetch_messages(token))
+      }
+      catch(err){
+        alert("Unable to fetch messages")
+        return
+      }
+    }
+
+    if(token){
+      fetchMessages()
+    }
+  }, [dispatch, token, modal])
+
+  useEffect(() => {
+    const socket = io('http://localhost:5500')
+    const connectSocket = () => {
+          socket.emit('setup', { _id: userId });
+  
+          socket.on('connect', () => {
+            console.log(`${socket.connected}, Socket.io connected`);
+          });
+
+          // socket.on('send-message', (content) => {
+          //     dispatch(send_message(content))
+          // })
+  
+        return () => {
+          socket.disconnect();
+          console.log('Disconnected');
+        };
+    }
+
+    connectSocket()
+  })
 
   return (
     <div className='overflow-hidden'>

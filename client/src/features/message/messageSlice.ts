@@ -40,14 +40,15 @@ export const fetch_messages = (token: any) => async (dispatch: any) => {
 
 
 
-export const send_message = (content: any, receiver: any, token: any) => async (dispatch: any) => {
+export const send_message = (content: any, receiverId: any, token: any, chatId: any) => async (dispatch: any) => {
   try {
-    const message = await fetch(`${msgUrl}/send${receiver}`, {
+    const message = await fetch(`${msgUrl}/send/${receiverId}/${chatId}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Content-type': 'application/json'
       },
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content:content })
     })
     if (!message.ok) {
       throw new Error("Unable to fetch chat messages.")

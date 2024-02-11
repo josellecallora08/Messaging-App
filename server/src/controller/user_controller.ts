@@ -15,6 +15,19 @@ export const createToken = ({_id, email}: PayloadToken): string => {
 }  
 
 class UserController {
+    
+    static async fetchOneUser(req: ExtendedRequest, res: Response){
+        try{    
+            const {receiverId} = req.params
+            const users = await UserModel.findById({_id:receiverId})
+            if(!users) return res.status(httpStatusCodes.NOT_FOUND).json({error:"User not found"})
+
+            return res.status(httpStatusCodes.OK).json(users)
+        } catch(err){
+            console.error("Error fetching user")
+            return res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({error: "Internal Server Error"})
+        }
+    }
 
     static async fetchUser(req: ExtendedRequest, res: Response){
         try{    

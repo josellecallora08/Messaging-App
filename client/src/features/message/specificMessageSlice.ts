@@ -25,7 +25,6 @@ export const fetch_message = (token: any, chatId: any) => async (dispatch: any) 
       if (!response.ok) {
         throw new Error("Unable to fetch chat messages.");
       }
-  
       const json = await response.json(); // Assuming `json` is an array of messages
       dispatch(fetch_specific_message(json)); // Dispatching success action with messages
     } catch (err) {

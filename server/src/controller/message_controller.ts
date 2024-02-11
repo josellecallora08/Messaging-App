@@ -5,6 +5,7 @@ import ChatModel from "../models/chat";
 import { ExtendedRequest } from "../middleware/authMiddleware";
 import { httpStatusCodes } from "../utils/statuscodes";
 import mongoose, { Types } from "mongoose";
+import { io } from "../server";
 
 
 
@@ -62,6 +63,7 @@ class MessageController {
             await chat.save()
             await message.save()
 
+            io.emit("send-message", content)
             return res
                 .status(httpStatusCodes.OK)
                 .json(message)
@@ -87,13 +89,13 @@ class MessageController {
                     model: UserModel,
                     select: 'name email' // Select only name and email fields for sender
                 }
-            })
+            }).sort({ createdAt: -1 })
             .populate({
                 path:'users',
                 model:UserModel,
                 select: 'name'
             })
-            .sort({ updatedAt: -1 })
+            .sort({ createdAt: 1 })
             
 
             if(!message)
@@ -127,7 +129,10 @@ class MessageController {
                 path:'senderId receiverId',
                 model: UserModel,
                 select: 'name '
-            }).sort({createdAt: -1})
+            }).sort({createdAt: 1})
+
+            io.emit('new-message', { chatId, message });
+
             return res
                 .status(httpStatusCodes.OK)
                 .json(json) 
