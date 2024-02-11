@@ -1,24 +1,15 @@
-import mongoose, {Document, ObjectId, Schema, Types} from 'mongoose'
+import mongoose, {Document, Schema, Types} from 'mongoose'
 
 interface Chat extends Document {
-    users: {
-        sender: ObjectId
-        receiver: ObjectId
-    }
+    users: Types.ObjectId[]
     messages: Types.ObjectId[]
 }
 
 const ChatSchema = new Schema({
-    users:{
-        sender: {
-            type:mongoose.Schema.Types.ObjectId,
-            ref: 'users'
-        },
-        receiver:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref: 'users'
-        }
-    },
+    users:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: 'users'
+    }],
     messages:[{
         type:mongoose.Schema.Types.ObjectId,
         ref: 'messages'

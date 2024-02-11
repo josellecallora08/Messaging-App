@@ -14,11 +14,14 @@ export const modalSlice = createSlice({
   initialState,
   reducers: {
     open_modal: (state) => {
-      state.status = !state.status
+      state.status = false
     },
+    close_modal: (state) => {
+      state.status = true
+    }
   },
 })
-export const { open_modal } = modalSlice.actions
+export const { open_modal, close_modal } = modalSlice.actions
 
 export const create_chatbox = (token:any) => async(dispatch:any) => {
   try{

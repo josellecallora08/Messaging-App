@@ -1,8 +1,7 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { fetchUser, loginUser } from '../features/auth/authSlice'
-import Cookies from 'js-cookie'
+import { useAppDispatch } from '../app/hooks'
+import {loginUser } from '../features/auth/authSlice'
 interface LoginProps {
   setLoginState: Dispatch<SetStateAction<boolean>>
 }
@@ -14,9 +13,7 @@ interface FieldSet {
 
 const Login: React.FC<LoginProps> = ({ setLoginState }) => {
   const dispatch = useAppDispatch()
-  const auth = useAppSelector((state) => state.auth)
   const navigate = useNavigate()
-  const token = Cookies.get('token')
   const [field, setField] = useState<FieldSet>({
     email: '',
     password: '',

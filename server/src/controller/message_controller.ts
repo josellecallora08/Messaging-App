@@ -4,6 +4,7 @@ import UserModel from "../models/user";
 import ChatModel from "../models/chat";
 import { ExtendedRequest } from "../middleware/authMiddleware";
 import { httpStatusCodes } from "../utils/statuscodes";
+import mongoose, { Types } from "mongoose";
 
 
 
@@ -13,19 +14,20 @@ class MessageController {
             const userId = req.user._id
             const {receiverId} = req.params
             if(await ChatModel.findOne({
-                'users.sender': userId || receiverId ,
-                'users.receiver': receiverId || userId
+                users: { $all: [userId, receiverId] }
             })){
                 return res
                 .status(httpStatusCodes.OK)
                 .json({msg: "Chat box exists."})
             } else {
-                const chat = await ChatModel.create({'users.sender':userId, 'users.receiver':receiverId})
+                const chat = await ChatModel.create({})
                 if(!chat)
                 return res
                     .status(httpStatusCodes.BAD_REQUEST)
                     .json({error: "Unable to create chat box."})
-
+          
+                chat.users.push(userId,new mongoose.Types.ObjectId(receiverId))
+                await chat.save()
                 return res
                     .status(httpStatusCodes.OK)
                     .json({msg: "Chat box created."})
@@ -43,14 +45,13 @@ class MessageController {
             const senderId = req.user._id
             const {receiverId, chatId} = req.params
             const {content} = req.body
-          
             const chat = await ChatModel.findById({_id:chatId})
             if(!chat)
             return res
                 .status(httpStatusCodes.BAD_REQUEST)
                 .json({error: "Unable to create chat box."})
 
-            const message = await MessageModel.create({senderId, receiverId, content})
+            const message = await MessageModel.create({senderId, receiverId, content, chatId: chat._id})
             if(!message)
                 return res
                     .status(httpStatusCodes.BAD_REQUEST)
@@ -63,7 +64,7 @@ class MessageController {
 
             return res
                 .status(httpStatusCodes.OK)
-                .json({msg: "Sent a message", message})
+                .json(message)
         } catch(err){
             console.log(`Internal Server Error: Send Message`)
             return res
@@ -76,29 +77,61 @@ class MessageController {
         try{
             const userId = req.user._id
             const message = await ChatModel.find({
-                $or:[{
-                    'users.sender': userId
-                },{
-                    'users.receiver': userId
-                }]
-            }).sort({updatedAt: -1}).populate({
-                path: 'users.sender users.receiver messages', // Specify multiple paths separated by a space
-                model: UserModel,
-                select: 'name -_id', // Add additional fields and exclude _id field
-            }).populate({
+                users:{ $all:[userId]}
+            })
+            .populate({
                 path: 'messages',
-                select: 'content updatedAt -_id', // Include content and createdAt fields, exclude _id
-            }).sort({updatedAt: -1})
+                select: 'content senderId receiverId -_id', // Include content and createdAt fields, exclude _id
+                populate: {
+                    path: 'senderId receiverId',
+                    model: UserModel,
+                    select: 'name email' // Select only name and email fields for sender
+                }
+            })
+            .populate({
+                path:'users',
+                model:UserModel,
+                select: 'name'
+            })
+            .sort({ updatedAt: -1 })
+            
+
             if(!message)
             return res
                 .status(httpStatusCodes.BAD_REQUEST)
                 .json({error: "Unable to fetch message."})
             
+
             return res
                 .status(httpStatusCodes.OK)
-                .json({msg: "Fetched messages.", message})
+                .json(message)
             
         } catch(err){
+            console.log("Internal SErver Error")
+            return res
+                .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
+                .json({error: "Internal Server Error"})
+        }
+    }
+
+    static async fetchMessage(req: Request, res: Response){
+        try{
+            const {chatId} = req.params
+            const message = await ChatModel.findById(chatId)
+            if(!message)
+            return res
+                .status(httpStatusCodes.BAD_REQUEST)
+                .json({error: "Unable to fetch message."})
+
+            const json = await MessageModel.find({chatId:message._id}).populate({
+                path:'senderId receiverId',
+                model: UserModel,
+                select: 'name '
+            }).sort({createdAt: -1})
+            return res
+                .status(httpStatusCodes.OK)
+                .json(json) 
+        }catch(err){
             console.log("Internal SErver Error")
             return res
                 .status(httpStatusCodes.INTERNAL_SERVER_ERROR)

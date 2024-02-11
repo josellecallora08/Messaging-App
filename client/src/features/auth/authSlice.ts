@@ -1,13 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 import Cookies from 'js-cookie';
 import { authUrl } from "../../utils/urls";
+import { jwtDecode } from "jwt-decode";
+import { JwtPayload } from "../../components/ChatLobby";
 
 
 const authSlice = createSlice({
     name: 'auth',
     initialState:{
         isAuthenticated: false,
-        user: null,
+        user: null
     },
     reducers:{
         login: (state, action) => {
@@ -41,7 +43,8 @@ export const registerUser = (navigate:any, name:any, email:any, password:any) =>
               return
             } 
             const data = await response.json()
-            dispatch(login(data));
+            const decodedToken = jwtDecode<JwtPayload>(data.token as string)
+            dispatch(login(decodedToken._id));
             navigate('/');
     } catch (error) {
         console.error("Something went wrong:", error);
@@ -66,7 +69,8 @@ export const loginUser = (navigate:any, email:any, password:any) => async (dispa
           return
         } 
         const data = await response.json()
-        dispatch(login(data));
+        const decodedToken = jwtDecode<JwtPayload>(data.token as string)
+        dispatch(login(decodedToken._id));
         navigate('/');
        
     } catch (error) {

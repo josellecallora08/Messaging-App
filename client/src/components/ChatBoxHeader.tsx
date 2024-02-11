@@ -1,12 +1,14 @@
 import back from '/back.svg'
 import image from '/icon.svg'
 import { useAppDispatch } from '../app/hooks'
-import { open_modal } from '../features/modal/ChatboxModalSlice'
+import { close_modal } from '../features/modal/ChatboxModalSlice'
+import { modify_fetch } from '../features/message/messageSlice'
 const ChatBoxHeader = () => {
   const dispatch = useAppDispatch()
 
   const handleModal = () => {
-    dispatch(open_modal())
+    dispatch(close_modal())
+    dispatch(modify_fetch())
   }
   return (
     <div className='w-full h-full max-h-20 bg-theme'>

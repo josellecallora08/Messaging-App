@@ -30,7 +30,7 @@ const ChatBoxFooter: React.FC<ChatStatus> = ({
     }
   }
   return (
-    <div className='bottom-0 w-full h-full min-h-20 max-h-28 bg-theme'>
+    <div className='w-full h-full min-h-20 max-h-28 bg-theme'>
       <form onSubmit={handleSubmit} className='w-5/6 h-full flex items-center justify-between gap-3 m-auto'>
         <div className='w-full h-full max-h-10 rounded-full overflow-hidden flex items-center'>
           {inputStatus ? (

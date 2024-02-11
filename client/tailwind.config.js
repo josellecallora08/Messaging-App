@@ -25,6 +25,9 @@ export default {
       },
       boxShadow:{
         'md-inner': '2px 2px 4px inset'
+      },
+      height:{
+        'inherit': 'calc(100% - 160px)'
       }
     },
   },

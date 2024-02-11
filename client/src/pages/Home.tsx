@@ -2,16 +2,18 @@ import ChatLobby from '../components/ChatLobby'
 import Header from '../components/Header'
 import ChatBox from '../components/ChatBox'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import io from 'socket.io-client'
+// import io from 'socket.io-client'
 import { useNavigate } from 'react-router-dom'
-import { logout, logoutUser} from '../features/auth/authSlice'
-import { useEffect, useState } from 'react'
+import {logoutUser} from '../features/auth/authSlice'
+import Cookies from 'js-cookie'
+import { useEffect} from 'react'
+import { fetch_messages } from '../features/message/messageSlice'
 
 const Home = () => {
-  const [userId, setUserId] = useState('')
   const modal = useAppSelector((state) => state.chatbox_modal_status.status)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const token = Cookies.get('token')
 
   // useEffect(() => {
   //   const socket = io("http://localhost:5500")
@@ -27,7 +29,7 @@ const Home = () => {
   //   };
   // }, [])
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
       dispatch(logoutUser(navigate))
     } catch (err) {
